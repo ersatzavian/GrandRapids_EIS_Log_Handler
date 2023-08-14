@@ -49,7 +49,7 @@ class LogFmt(IntEnum):
 	CHK = 40		# 1-byte checksum
 
 # 'rb' flag required to read text file in binary format
-with open('TESTLOG.TXT','rb') as logfilbute:
+with open('TESTLOG.TXT','rb') as logfile:
 	# largest log file I've managed to generate so far is 13.9 MB
 	logbuffer = logfile.read()
 

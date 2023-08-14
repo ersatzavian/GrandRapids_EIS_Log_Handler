@@ -9,12 +9,16 @@ Currently working on getting a single jupyter notebook working for log analysis.
 * Parse logs and post to InfluxDB, to allow review with Grafana - got it working, but abandoned it. InfluxDB is really not suitable for this task for several reasons:
 ** 5MB/5min limits on free plan mean I can't upload a full log files at will, much less a group of them. Log files may be tens of MB each, and are packed as densely as possible as binary logs; the size of the parsed data structure I'm attempting to post is likely more than 10x the size of the packed log file.
 ** Logs are not timestamped on engine information system, nor on the Openlog that records the datastream from the EIS. Therefore, points get grouped by processing time. This doesn't really break anything but makes the X-axis rather clumsy and misleading. A plain sequence number might be better. 
-* Parse logs and process results in [Jupyter Lab|https://jupyter.org/install] - appears to be much more appropriate to my use case. 
+* Parse logs and process results in [Jupyter Lab](https://jupyter.org/install) - appears to be much more appropriate to my use case. 
+
+# Note
+* Working on a laptop where I have to tolerate a dev environment I didn't build, and jupyter installed from pip won't load a kernel, so I've had to install anaconda to get jupyter working. 
 
 # Next Steps
+1. Figure out how to save and load a pandas dataframe to/from file. [Looking at pyarrow.feather package for this](https://towardsdatascience.com/the-best-format-to-save-pandas-data-414dca023e0d). See [pyarrow docs](https://arrow.apache.org/docs/python/feather.html)
 1. Update parser to serially process all files in a predetermined folder and append to a single database file I can keep in github or similar.
 1. Make some useful plots.
 1. Learn if protobufs offer a better way to scan for the header and struct unpack (probably not)
 
 # Related
-* [Great Lakes Engine Information System|https://grtavionics.com/product/eis-4000/] to [Openlog|https://www.sparkfun.com/products/13712] [Inverting Adapter|https://github.com/ersatzavian/EIS_Inverting_Adapter]
+* [Great Lakes Engine Information System](https://grtavionics.com/product/eis-4000/) to [Openlog](https://www.sparkfun.com/products/13712) [Inverting Adapter](https://github.com/ersatzavian/EIS_Inverting_Adapter)
