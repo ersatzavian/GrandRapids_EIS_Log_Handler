@@ -15,9 +15,13 @@ Currently working on getting a single jupyter notebook working for log analysis.
 * Working on a laptop where I have to tolerate a dev environment I didn't build, and jupyter installed from pip won't load a kernel, so I've had to install anaconda to get jupyter working. 
 
 # Next Steps
-1. Figure out how to save and load a pandas dataframe to/from file. [Looking at pyarrow.feather package for this](https://towardsdatascience.com/the-best-format-to-save-pandas-data-414dca023e0d). See [pyarrow docs](https://arrow.apache.org/docs/python/feather.html)
-1. Update parser to serially process all files in a predetermined folder and append to a single database file I can keep in github or similar.
-1. Make some useful plots.
+1. Determine if plots can be interactive (zoom)
+1. Collect key traces and share with groups and Jeremy for theories
+1. Clean up little todos
+1. Decide whether working with the loaded db makes more sense as dict(s) or dataframe(s)
+1. Tag flights by tach hours at start and end
+1. Add selection of flights and channels to plot
+1. Evaluate uploading to savvy mx
 1. Learn if protobufs offer a better way to scan for the header and struct unpack (probably not)
 
 # Related
