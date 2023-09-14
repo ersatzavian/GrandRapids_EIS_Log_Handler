@@ -1,7 +1,14 @@
 import struct
+import csv
 import pandas as pd
 from enum import IntEnum
 import os, time, datetime
+import requests
+
+SAVVY_TOKEN = "4cb49fdf-6bd2-47bf-8306-23fb2852445e"
+
+# we're faking our timestamps. This is how much to increment by between log entries in s
+TIMESTAMP_INCREMENT_SEC = datetime.timedelta(seconds=0.1)
 
 # values are 16-byte in packet unless noted here
 class LogFmt(IntEnum):
@@ -47,15 +54,20 @@ class LogFmt(IntEnum):
 	SPARE = 39		# 1-byte
 	CHK = 40		# 1-byte checksum
 
-
 directory = os.fsencode('./new_logs')
     
-# Watch out for DS_Store files - disable creation of these with:
-# defaults write com.apple.desktopservices DSDontWriteNetworkStores true
 for file in os.listdir(directory):
+    
     filename = os.fsdecode(file)
     
+    # ignore hidden files like .DS_Store
+    if filename.startswith('.'):
+        continue
+
     this_flight_dict = {
+        "Lcl Date": [],
+        "Lcl Time": [],
+        "UTCOfst": [],
         "tach": [],
         "cht2": [],
         "cht3": [],
@@ -68,7 +80,7 @@ for file in os.listdir(directory):
         "coolant_temp_f": [],
         "oil_temp_f": [],
         "oil_pres_psi": [],
-        "aux1": [],
+        "amps": [],
         "aux2": [],
         "aux3": [],
         "aux4": [],
@@ -77,6 +89,9 @@ for file in os.listdir(directory):
         "tach_hrs": [],
         "flight_hrs": []
     }
+
+    # we're faking timestamps since neither the engine monitor nor the openlogger keep time
+    timestamp = datetime.datetime.fromtimestamp(0)
 
     # 'rb' flag required to read text file in binary format
     with open('./new_logs/'+filename,'rb') as logfile:
@@ -93,6 +108,12 @@ for file in os.listdir(directory):
             # TODO all logs seem to have a bad packet at same index? (6)
             print("Bad packet at idx %d" % idx)
 
+        # we're faking timestamps, just slap a date in there instead of calling strftime 
+        this_flight_dict["Lcl Date"].append("2012-04-20")
+        this_flight_dict["Lcl Time"].append(timestamp.strftime("%H:%M:%S.%f"))
+        timestamp = timestamp + TIMESTAMP_INCREMENT_SEC
+        # fake the UTC offset as well
+        this_flight_dict["UTCOfst"].append("-08:00:00")
         this_flight_dict["tach"].append(unpacked_line[LogFmt.TACH])
         this_flight_dict["cht2"].append(unpacked_line[LogFmt.CHT2])
         this_flight_dict["cht3"].append(unpacked_line[LogFmt.CHT3])
@@ -105,7 +126,7 @@ for file in os.listdir(directory):
         this_flight_dict["coolant_temp_f"].append(unpacked_line[LogFmt.COOL])
         this_flight_dict["oil_temp_f"].append(unpacked_line[LogFmt.OILT])
         this_flight_dict["oil_pres_psi"].append(unpacked_line[LogFmt.OILP])
-        this_flight_dict["aux1"].append(unpacked_line[LogFmt.AUX1])
+        this_flight_dict["amps"].append(unpacked_line[LogFmt.AUX1])
         this_flight_dict["aux2"].append(unpacked_line[LogFmt.AUX2])
         this_flight_dict["aux3"].append(unpacked_line[LogFmt.AUX3])
         this_flight_dict["aux4"].append(unpacked_line[LogFmt.AUX4])
@@ -122,16 +143,32 @@ for file in os.listdir(directory):
     output_filename = "%s_%d_to_%d.csv" % (os.path.splitext(filename)[0], 
         this_flight_dict["tach_hrs"][0], 
         this_flight_dict["tach_hrs"][len(this_flight_dict["tach_hrs"])-1])
+
+    # this semi-magic line of metadata is required to mimic a garmin log for Savvy's log parsers
+    metadata_row = ["#airframe_info","log_version=\"1.00\"","airframe_name=\"Kitfox\"","unit_software_part_number=\"001\"","unit_software_version=\"01\"","system_software_part_number=\"00\"","system_id=\"123\"","mode=NORMAL"]
     
-    pd.DataFrame(this_flight_dict).to_csv("./processed_logs/%s" % output_filename, index=False)
+    # this row of units / formats must correspond to the column headers listed above
+    units_row = ["#yyyy-mm-dd","hh:mm:ss.ms","hh:mm:ss","rpm","deg F","deg F","deg F","deg F","deg F","deg F","volts","deg F","deg F","deg F","psi","amps","hours","hh:mm:ss"]
+
+    # newline param required to avoid inserting empty lines after written lines
+    with open("./processed_logs/%s" % output_filename, mode='w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(metadata_row)
+        csvwriter.writerow(units_row)
+
+    pd.DataFrame(this_flight_dict).to_csv("./processed_logs/%s" % output_filename, mode='a', index=False)
     # os.remove("./new_logs/%s" % filename)
     
-    # TODO upload to savvy aircraft mx directly
-    #     https://github.com/savvyaviation/api-docs
-    
-#     token = "4cb49fdf-6bd2-47bf-8306-23fb2852445e"
-#     with open("./processed_logs/%s" % output_filename, 'rb') as f:
-#         r = requests.post("https://apps.savvyaviation.com/upload_files_api/15678/",
-#             form={'token': token}
-#             files={'report.xls': f})
+    # upload to savvy aircraft mx directly
+    # https://github.com/savvyaviation/api-docs
+
+    # Use token to get aircraft ID
+    r = requests.get("https://apps.savvyaviation.com/get-aircraft/",
+        data={'token': SAVVY_TOKEN})
+    print(r)
+
+    # with open("./processed_logs/%s" % output_filename, 'rb') as f:
+    #     r = requests.post("https://apps.savvyaviation.com/upload_files_api/15678/",
+    #         headers={'token': SAVVY_TOKEN},
+    #         files={'report.xls': f})
     
