@@ -4,6 +4,7 @@ import pandas as pd
 from enum import IntEnum
 import os, time, datetime
 import requests
+import json
 
 SAVVY_TOKEN = "4cb49fdf-6bd2-47bf-8306-23fb2852445e"
 
@@ -163,12 +164,15 @@ for file in os.listdir(directory):
     # https://github.com/savvyaviation/api-docs
 
     # Use token to get aircraft ID
-    r = requests.get("https://apps.savvyaviation.com/get-aircraft/",
+    r = requests.post("https://apps.savvyaviation.com/get-aircraft/",
         data={'token': SAVVY_TOKEN})
-    print(r)
+    acft_id = r.json()[0]["id"]
+    print(r.json())
 
-    # with open("./processed_logs/%s" % output_filename, 'rb') as f:
-    #     r = requests.post("https://apps.savvyaviation.com/upload_files_api/15678/",
-    #         headers={'token': SAVVY_TOKEN},
-    #         files={'report.xls': f})
-    
+    print("Uploading %s" % output_filename)
+    with open("./processed_logs/%s" % output_filename, 'rb') as f:
+        r = requests.post("https://apps.savvyaviation.com/upload_files_api/%s/" % acft_id,
+            data={'token': SAVVY_TOKEN},
+            files={output_filename: f})
+        print(r)
+        print(r.json())
