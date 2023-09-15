@@ -17,7 +17,7 @@ log_processor.py batch-processes text logs from ./new_logs/ into CSVs in ./proce
 * Working on a laptop where I have to tolerate a dev environment I didn't build, and jupyter installed from pip won't load a kernel, so I've had to install anaconda to get jupyter working. 
 
 # Next Steps
-* Get auto-upload to savvy working. Currently, request for aircraft ID fails (405)
+* Get auto-upload to savvy working. Currently, posting a log reports status 200 but the response reports an error and the log does not appear in flights.
 
 
 # Related
