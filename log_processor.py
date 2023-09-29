@@ -173,6 +173,6 @@ for file in os.listdir(directory):
     with open("./processed_logs/%s" % output_filename, 'rb') as f:
         r = requests.post("https://apps.savvyaviation.com/upload_files_api/%s/" % acft_id,
             data={'token': SAVVY_TOKEN},
-            files={output_filename: f})
+            files={'file': f})
         print(r)
         print(r.json())
