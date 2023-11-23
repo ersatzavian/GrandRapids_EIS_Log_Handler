@@ -6,6 +6,11 @@ Jupyter notebook is convenient for graphing data locally.
 
 log_processor.py batch-processes text logs from ./new_logs/ into CSVs in ./processed_logs/, automatically uploading them to [Savvy Analysis](https://apps.savvyaviation.com/)
 
+# Usage
+1. Download files from [Openlog](https://www.sparkfun.com/products/13712) SD card into `./new_logs`
+2. Run: `python ./log_processor.py`
+
+
 ## Tried So Far
 * Use protobufs to parse raw logs (see log format in "Model 4000:600 Serial Data List") - this turned out to be pretty awkward and python can easily handle the task in one line with struct. The format argument to struct is a bit of a hard-coded magic number, so maybe there's room to improve this.
 * Parse logs and post to InfluxDB, to allow review with Grafana - got it working, but abandoned it. InfluxDB is really not suitable for this task for several reasons:
@@ -17,8 +22,6 @@ log_processor.py batch-processes text logs from ./new_logs/ into CSVs in ./proce
 * Working on a laptop where I have to tolerate a dev environment I didn't build, and jupyter installed from pip won't load a kernel, so I've had to install anaconda to get jupyter working. 
 
 # Next Steps
-* Get auto-upload to savvy working. Currently, posting a log reports status 200 but the response reports an error and the log does not appear in flights.
-
 
 # Related
 * [Great Lakes Engine Information System](https://grtavionics.com/product/eis-4000/) to [Openlog](https://www.sparkfun.com/products/13712) [Inverting Adapter](https://github.com/ersatzavian/EIS_Inverting_Adapter)
